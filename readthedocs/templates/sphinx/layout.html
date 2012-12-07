@@ -52,7 +52,9 @@ documentation without rebuilding every one. If this script is embedded in each b
 
 {% block sidebarsourcelink %}
   {% if show_source and has_source and sourcename or display_github %}
+    {% if using_theme %}
     <div id="page-context">
+    {% endif %}
         <h3>{{ _('This Page') }}</h3>
         <ul class="this-page-menu">
           {% if show_source and has_source and sourcename %}
@@ -66,7 +68,9 @@ documentation without rebuilding every one. If this script is embedded in each b
               Edit on GitHub</a></li>
           {% endif %}
         </ul>
+    {% if using_theme %}
     </div>
+    {% endif %}
   {% endif %}
 {% endblock %}
 
