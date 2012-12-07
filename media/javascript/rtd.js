@@ -70,4 +70,24 @@
     getVersions(slug, version);
   });
 
+  $(function () {
+    var nav = document.getElementById('page-context'),
+        initial = nav.offsetTop,
+        docked = false;
+    window.onscroll = function () {
+        var scrollTop = document.body.scrollTop ? document.body.scrollTop : document.documentElement.scrollTop;
+        if(!docked && nav.offsetTop - scrollTop < 0) {
+            nav.style.position = 'fixed';
+            nav.style.top = 0;
+            docked = true;
+        } else if(docked && scrollTop < initial) {
+            nav.style.position = 'absolute';
+            nav.style.top = initial + 'px';
+            docked = false;
+        }
+    };
+  });
+
+
+
 })();
