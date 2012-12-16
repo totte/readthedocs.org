@@ -53,6 +53,33 @@
     }
   };
 
+  var getMoreLikeThis = function (slug, filename) {
+    var URL = ["//readthedocs.org/mlt/", slug, "/", filename, "?callback=?"].join("");
+
+    return $.getJSON(URL, gotDataMLT);
+
+    function gotDataMLT (data) {
+      var items = $('<ul />')
+        , object
+
+      for (var num in data) {
+        obj = data[num]
+        title = obj[0]
+        url = obj[1]
+        console.log(obj)
+        console.log(title)
+        console.log(url)
+        Item = $('<a href="#"></a>')
+          .attr('href', url)
+          .text(title)
+          .appendTo($('<li />').appendTo(items))
+      }
+
+      // update widget and sidebar
+      $('.sphinxsidebarwrapper').append(items.html())
+    }
+  };
+
   $(function () {
     var slug = window.doc_slug,
         version = window.doc_version;
@@ -68,6 +95,9 @@
 
     checkVersion(slug, version);
     getVersions(slug, version);
+    // doc_filename comes from the Sphinx built, and is in the page before this
+    // file is included
+    getMoreLikeThis(slug, doc_filename)
   });
 
 })();
