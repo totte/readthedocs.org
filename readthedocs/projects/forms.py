@@ -10,6 +10,7 @@ from projects import constants
 from projects.models import Project, EmailHook, WebHook
 from projects.tasks import update_docs
 
+from taggit.forms import TagField
 
 class ProjectForm(forms.ModelForm):
     required_css_class = "required"
@@ -106,10 +107,14 @@ class BaseVersionsForm(forms.Form):
     def save_version(self, version):
         new_value = self.cleaned_data.get('version-%s' % version.slug, None)
         privacy_level = self.cleaned_data.get('privacy-%s' % version.slug, None)
-        if (new_value is None or new_value == version.active) and (privacy_level is None or privacy_level == version.privacy_level):
+        tags = self.cleaned_data.get('tags-%s' % version.slug, None)
+        if (new_value is None or new_value == version.active) and (
+            privacy_level is None or privacy_level == version.privacy_level) and (
+            tags is None or tags == version.tags):
             return
         version.active = new_value
         version.privacy_level = privacy_level
+        version.tags = tags
         version.save()
         if version.active and not version.built and not version.uploaded:
             update_docs.delay(self.project.pk, record=True, version_pk=version.pk)
@@ -131,9 +136,10 @@ def build_versions_form(project):
     for version in versions_qs:
         field_name = 'version-%s' % version.slug
         privacy_name = 'privacy-%s' % version.slug
+        tags_name = 'tags-%s' % version.slug
         attrs[field_name] = forms.BooleanField(
             label=version.verbose_name,
-            widget=DualCheckboxWidget(version),
+            #widget=DualCheckboxWidget(version),
             initial=version.active,
             required=False,
         )
@@ -143,6 +149,11 @@ def build_versions_form(project):
             choices=constants.PRIVACY_CHOICES,
             initial=version.privacy_level,
         )
+        # Commented out until I figure out how to pass in initial data
+        #attrs[tags_name] = TagField(
+            # This isn't a real label, but just a slug for the template
+            #label="tags",
+        #)
     return type('VersionsForm', (BaseVersionsForm,), attrs)
 
 

@@ -2,7 +2,55 @@
 
 {% load markup %}
 
+
+{% block extra_scripts %}
+    <script type="text/javascript">
+        var project = "{{ project|escapejs }}",
+            delay = (function() {
+                var timer = 0;
+                return function(callback, ms) {
+                    clearTimeout (timer);
+                    timer = setTimeout(callback, ms);
+                };
+            })();
+
+        $(document).ready(function() {
+            var form = $("#filter_form"),
+                initial_versions = form.closest(".module-list").find("ul").html();
+
+            form.empty()
+                .append('<input id="versions_filter" type="text" placeholder="Filter versions…"><div class="help_text"><p>Filter versions by <em>&lt;tag name&gt;</em> or <em>&lt;version name&gt;:&lt;tag name&gt;</em>, e.g., <em>latest:demo</em></p></div>');
+            
+            form.find("#versions_filter").keyup(function() {
+                delay(function() {
+                    var filters = form.find('#versions_filter').val().split(":"),
+                        url = '/projects/autocomplete/filter/version/' + project +'/',
+                        versions_list = form.closest(".module-list").find("ul");
+
+                    if (filters[0] && !filters[1]) {
+                        url = url + '?tag=' + filters[0];
+                    }
+
+                    if (filters[0] && filters[1]) {
+                        url = url + '?slug=' + filters[0] + '&tag=' + filters[1];
+                    }
+
+                    url = url + '&format=html'
+
+                    if (filters != "") {
+                        versions_list.load(url + ' .module-item');
+                    } else {
+                        versions_list.empty().append(initial_versions);
+                    }
+                }, 250);
+            });
+        });
+    </script>
+{% endblock %}
+
+
 {% block title %}{{ project.name }}{% endblock %}
+{% block body_class %}project_detail{% endblock %}
 
 {% block project_editing %}
     {% with overview_active="active" %}
